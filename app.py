@@ -4,9 +4,20 @@ from sqlalchemy.sql.expression import func
 from flask_marshmallow import Marshmallow
 from faker import Faker
 from collections import namedtuple
-
+from flask_oidc import OpenIDConnect
+import json
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql+psycopg2://postgres:undeuxtrois@lol.cournut.ovh:5432/hack"
+app.config.update({
+    'SECRET_KEY': 'kdjfoijdzoxksdpdlpdskdoskdloskqq',
+    'TESTING': True,
+    'DEBUG': True,
+    'OIDC_CLIENT_SECRETS': 'client_secrets.json',
+    'OIDC_ID_TOKEN_COOKIE_SECURE': False,
+    'OIDC_REQUIRE_VERIFIED_EMAIL': False,
+    'OIDC_OPENID_REALM': 'http://localhost:5000/oidc_callback'
+})
+oidc = OpenIDConnect(app)
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 fake = Faker()
@@ -19,9 +30,49 @@ def convert(dictionary):
     return namedtuple('GenericDict', dictionary.keys())(**dictionary)
 
 
+
 @app.route('/')
 def hello_world():
-    return "hello"
+    if oidc.user_loggedin:
+        return ('Hello, %s, <a href="/private">See private</a> '
+                '<a href="/logout">Log out</a>') % \
+            oidc.user_getfield('email')
+    else:
+        return 'Welcome anonymous, <a href="/private">Log in</a>'
+
+
+@app.route('/api/locations')
+def get_locations():
+    locations = Location.query.all()
+    schema = LocationSchema(many=True)
+    return schema.jsonify(locations)
+
+
+@app.route('/api/regions')
+def get_regions():
+    regions = Region.query.all()
+    schema = RegionSchema(many=True)
+    return schema.jsonify(regions)
+
+
+@app.route('/api/countries')
+def get_countries():
+    countries = Country.query.all()
+    schema = CountrySchema(many=True)
+    return schema.jsonify(countries)
+
+@app.route('/private')
+@oidc.require_login
+def hello_me():
+    info = oidc.user_getinfo(['email', 'clientId'])
+    return ('Hello, %s (%s)! <a href="/">Return</a>' %
+            (info.get('email'), info.get('clientId')))
+
+
+@app.route('/logout')
+def logout():
+    oidc.logout()
+    return 'Hi, you have been logged out! <a href="/">Return</a>'
 
 
 @app.route('/generate_data')

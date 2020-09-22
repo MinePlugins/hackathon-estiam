@@ -1,5 +1,6 @@
 from app import db, ma
-from marshmallow_sqlalchemy import ModelSchema
+from marshmallow_sqlalchemy import ModelSchema, fields
+from marshmallow_sqlalchemy.fields import Nested
 
 
 class Region(db.Model):
@@ -7,9 +8,9 @@ class Region(db.Model):
     name = db.Column(db.String, unique=True)
 
 
-class RegionSchema(ModelSchema):
+class RegionSchema(ma.Schema):
     class Meta:
-        model = Region
+        fields = ("id", "name")
 
 
 class Country(db.Model):
@@ -19,9 +20,10 @@ class Country(db.Model):
     region = db.relationship("Region", backref="regions")
 
 
-class CountrySchema(ModelSchema):
+class CountrySchema(ma.Schema):
     class Meta:
-        model = Country
+        fields = ("id", "name", "region")
+    region = ma.Nested(RegionSchema)
 
 
 class Location(db.Model):
@@ -32,6 +34,12 @@ class Location(db.Model):
     state = db.Column(db.String)
     country_id = db.Column(db.Integer, db.ForeignKey('country.id'))
     country = db.relationship("Country", backref="countrys")
+
+
+class LocationSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "address", "postal_code", "city", "state", "country")
+    country = fields.Nested(lambda: CountrySchema)
 
 
 class Warehouse(db.Model):
