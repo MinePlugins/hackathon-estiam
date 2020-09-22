@@ -50,6 +50,12 @@ class Warehouse(db.Model):
     warehouse = db.relationship("Inventory", back_populates="warehouse")
 
 
+class WarehouseSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "name", "location")
+    location = fields.Nested(lambda: LocationSchema)
+
+
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String, nullable=False)
@@ -61,9 +67,20 @@ class Employee(db.Model):
     manager = db.relationship(lambda: Employee, remote_side=id, backref='managers')
 
 
+class EmployeeSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "first_name", "last_name", "email", "phone", "hire_date", "manager")
+    manager = fields.Nested(lambda: EmployeeSchema)
+
+
 class ProductCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
+
+
+class ProductCategorySchema(ma.Schema):
+    class Meta:
+        fields = ("id", "name")
 
 
 class Product(db.Model):
@@ -73,9 +90,15 @@ class Product(db.Model):
     standard_cost = db.Column(db.Float)
     list_cost = db.Column(db.Float)
     category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'))
-    category = db.relationship("ProductCategory", backref="categorys")
+    category = db.relationship("ProductCategory", backref="category")
     order_item = db.relationship("OrderItem", back_populates="product")
     inventory = db.relationship("Inventory", back_populates="product")
+
+
+class ProductSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "name", "description", "standard_cost", "category")
+    category = fields.Nested(lambda: ProductCategorySchema)
 
 
 class Customer(db.Model):

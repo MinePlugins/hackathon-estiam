@@ -41,11 +41,32 @@ def hello_world():
         return 'Welcome anonymous, <a href="/private">Log in</a>'
 
 
+@app.route('/api/products')
+def get_products():
+    products = Product.query.all()
+    schema = ProductSchema(many=True)
+    return schema.jsonify(products)
+
+
 @app.route('/api/locations')
 def get_locations():
     locations = Location.query.all()
     schema = LocationSchema(many=True)
     return schema.jsonify(locations)
+
+
+@app.route('/api/warehouses')
+def get_warehouses():
+    warehouses = Warehouse.query.all()
+    schema = WarehouseSchema(many=True)
+    return schema.jsonify(warehouses)
+
+
+@app.route('/api/employees')
+def get_employees():
+    employees = Employee.query.all()
+    schema = EmployeeSchema(many=True)
+    return schema.jsonify(employees)
 
 
 @app.route('/api/regions')
