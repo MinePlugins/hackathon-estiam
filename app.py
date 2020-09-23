@@ -5,6 +5,7 @@ from flask_marshmallow import Marshmallow
 from faker import Faker
 from collections import namedtuple
 from flask_oidc import OpenIDConnect
+from flask_cors import CORS
 import random
 import json
 app = Flask(__name__)
@@ -21,6 +22,7 @@ app.config.update({
 oidc = OpenIDConnect(app)
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
+CORS(app)
 fake = Faker()
 from model import *
 
@@ -268,4 +270,4 @@ def generate():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')
