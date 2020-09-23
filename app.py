@@ -107,7 +107,7 @@ def get_contacts():
     contacts = Contact.query.all()
     schema = ContactSchema(many=True)
     return schema.jsonify(contacts)
-
+  
 # Order route
 @app.route('/api/orders')
 def get_orders():
