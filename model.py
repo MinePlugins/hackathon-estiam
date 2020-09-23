@@ -134,6 +134,8 @@ class Order(db.Model):
 
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    quantity = db.Column(db.Integer)
+    unit_price = db.Column(db.Integer)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
     product = db.relationship(Product, back_populates='order_item')
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
