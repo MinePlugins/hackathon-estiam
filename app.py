@@ -51,11 +51,32 @@ def get_products():
     return schema.jsonify(products)
 
 
+# test products route by id 
+@app.route("/api/product/<id>")
+def get_productId(id):
+    productId = Product.query.filter_by(id=id).first()
+    schema = ProductSchema()
+    if productId:
+        return schema.jsonify(productId)
+    else:
+        return '<h1>Product ' + id + ' does not exist</h1>'
+
+
 @app.route('/api/locations')
 def get_locations():
     locations = Location.query.all()
     schema = LocationSchema(many=True)
     return schema.jsonify(locations)
+
+# test location route by id 
+@app.route("/api/location/<id>")
+def get_locationId(id):
+    locationId = Location.query.filter_by(id=id).first()
+    schema = LocationSchema()
+    if orderItemId:
+        return schema.jsonify(locationId)
+    else:
+        return '<h1>Location ' + id + ' does not exist</h1>'
 
 
 @app.route('/api/warehouses')
@@ -64,6 +85,15 @@ def get_warehouses():
     schema = WarehouseSchema(many=True)
     return schema.jsonify(warehouses)
 
+# test warehouse route by id 
+@app.route("/api/warehouse/<id>")
+def get_warehouseId(id):
+    warehouseId = Warehouse.query.filter_by(id=id).first()
+    schema = WarehouseSchema()
+    if orderItemId:
+        return schema.jsonify(warehouseId)
+    else:
+        return '<h1>Warehouse ' + id + ' does not exist</h1>'
 
 @app.route('/api/employees')
 def get_employees():
@@ -71,7 +101,15 @@ def get_employees():
     schema = EmployeeSchema(many=True)
     return schema.jsonify(employees)
 
-
+# test employee route by id  
+@app.route("/api/employee/<id>")
+def get_employeeId(id):
+    employeeId = Employee.query.filter_by(id=id).first()
+    schema = EmployeeSchema()
+    if orderItemId:
+        return schema.jsonify(employeeId)
+    else:
+        return '<h1>Employee ' + id + ' does not exist</h1>'
 
 @app.route('/api/regions')
 def get_regions():
@@ -79,12 +117,31 @@ def get_regions():
     schema = RegionSchema(many=True)
     return schema.jsonify(regions)
 
+# test Region route by id 
+@app.route("/api/region/<id>")
+def get_regionId(id):
+    regionId = Region.query.filter_by(id=id).first()
+    schema = RegionSchema()
+    if orderItemId:
+        return schema.jsonify(regionId)
+    else:
+        return '<h1>Region ' + id + ' does not exist</h1>'
 
 @app.route('/api/countries')
 def get_countries():
     countries = Country.query.all()
     schema = CountrySchema(many=True)
     return schema.jsonify(countries)
+
+# test Country route by id 
+@app.route("/api/country/<id>")
+def get_countryId(id):
+    countryId = Country.query.filter_by(id=id).first()
+    schema = CountrySchema()
+    if countryId:
+        return schema.jsonify(countryId)
+    else:
+        return '<h1>CountryId ' + id + ' does not exist</h1>'
 
 #Customer route 
 @app.route('/api/customers')
@@ -93,7 +150,7 @@ def get_customers():
     schema = CustomerSchema(many=True)
     return schema.jsonify(customers)
 
-# test CustomerId route 
+# test Customer route by id 
 @app.route("/api/customer/<id>")
 def get_customerId(id):
     customerId = Customer.query.filter_by(id=id).first()
@@ -110,7 +167,7 @@ def get_contacts():
     schema = ContactSchema(many=True)
     return schema.jsonify(contacts)
 
-# test CustomerId route 
+# test contact route by id
 @app.route("/api/contact/<id>")
 def get_contactId(id):
     contactId = Contact.query.filter_by(id=id).first()
@@ -120,15 +177,22 @@ def get_contactId(id):
     else:
         return '<h1>Contact ' + id + ' does not exist</h1>' 
 
-# vente par pays 
-
-
 # Order route
 @app.route('/api/orders')
 def get_orders():
     orders = Order.query.all()
     schema = OrderSchema(many=True)
     return schema.jsonify(orders)
+
+# test Order route by id 
+@app.route("/api/order/<id>")
+def get_orderId(id):
+    orderId = Order.query.filter_by(id=id).first()
+    schema = OrderSchema()
+    if orderId:
+        return schema.jsonify(orderId)
+    else:
+        return '<h1>Order ' + id + ' does not exist</h1>'
 
 # OrderItems route
 @app.route('/api/orderItems')
@@ -138,12 +202,32 @@ def get_orderItems():
     # Renvoi un tab [] vide ??
     return schema.jsonify(orderItems)
 
+# test OrderItem route by id 
+@app.route("/api/orderItem/<id>")
+def get_orderItemId(id):
+    orderItemId = OrderItem.query.filter_by(id=id).first()
+    schema = OrderItemSchema()
+    if orderItemId:
+        return schema.jsonify(orderItemId)
+    else:
+        return '<h1>OrderItem ' + id + ' does not exist</h1>'
+
 # Inventory route
 @app.route('/api/inventorys')
 def get_inventorys():
     inventorys = Inventory.query.all()
     schema = InventorySchema(many=True)
     return schema.jsonify(inventorys)
+
+# test Invetory route by id 
+@app.route("/api/inventory/<id>")
+def get_inventoryId(id):
+    inventoryId = Inventory.query.filter_by(id=id).first()
+    schema = InventorySchema()
+    if inventoryId:
+        return schema.jsonify(inventoryId)
+    else:
+        return '<h1>InventoryId ' + id + ' does not exist</h1>'
 
 @app.route('/private')
 @oidc.require_login
