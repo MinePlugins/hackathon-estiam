@@ -6,7 +6,7 @@ from faker import Faker
 from collections import namedtuple
 from flask_oidc import OpenIDConnect
 from flask_cors import CORS
-
+import random
 import json
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql+psycopg2://postgres:undeuxtrois@lol.cournut.ovh:5432/hack"
@@ -72,6 +72,7 @@ def get_employees():
     return schema.jsonify(employees)
 
 
+
 @app.route('/api/regions')
 def get_regions():
     regions = Region.query.all()
@@ -84,6 +85,52 @@ def get_countries():
     countries = Country.query.all()
     schema = CountrySchema(many=True)
     return schema.jsonify(countries)
+
+#Customer route 
+@app.route('/api/customers')
+def get_customers():
+    customers = Customer.query.all()
+    schema = CustomerSchema(many=True)
+    return schema.jsonify(customers)
+
+# test CustomerId route 
+@app.route("/api/customer/<id>")
+def get_customerId(id):
+    customerId = Customer.query.filter_by(id=id).first()
+    schema = CustomerSchema()
+    if customerId:
+        return schema.jsonify(customerId)
+    else:
+        return 'Customer id does not exist' 
+
+# Contact route
+@app.route('/api/contacts')
+def get_contacts():
+    contacts = Contact.query.all()
+    schema = ContactSchema(many=True)
+    return schema.jsonify(contacts)
+  
+# Order route
+@app.route('/api/orders')
+def get_orders():
+    orders = Order.query.all()
+    schema = OrderSchema(many=True)
+    return schema.jsonify(orders)
+
+# OrderItems route
+@app.route('/api/orderItems')
+def get_orderItems():
+    orderItems = OrderItem.query.all()
+    schema = OrderItemSchema(many=True)
+    # Renvoi un tab [] vide ??
+    return schema.jsonify(orderItems)
+
+# Inventory route
+@app.route('/api/inventorys')
+def get_inventorys():
+    inventorys = Inventory.query.all()
+    schema = InventorySchema(many=True)
+    return schema.jsonify(inventorys)
 
 @app.route('/private')
 @oidc.require_login

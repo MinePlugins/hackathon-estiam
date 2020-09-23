@@ -110,6 +110,10 @@ class Customer(db.Model):
     contact = db.relationship("Contact", back_populates="customer")
     order = db.relationship("Order", back_populates="customer")
 
+# CusomerSchema
+class CustomerSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "name", "address", "website", "credit_limit")
 
 class Contact(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -120,6 +124,11 @@ class Contact(db.Model):
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
     customer = db.relationship("Customer", back_populates="contact")
 
+# ContactSchema
+class ContactSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "first_name", "last_name", "email", "phone", "customer")
+    customer = fields.Nested(lambda: ContactSchema)
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -131,6 +140,11 @@ class Order(db.Model):
     status = db.Column(db.String, nullable=False)
     order_item = db.relationship("OrderItem", back_populates="order")
 
+# OrderSchema
+class OrderSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "salesman", "order_date", "status")
+    salesman = fields.Nested(lambda: OrderSchema) 
 
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -141,6 +155,10 @@ class OrderItem(db.Model):
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
     order = db.relationship(Order, back_populates='order_item')
 
+# OrderItemSchema
+class OrderItemSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "product", "order")
 
 class Inventory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -149,3 +167,8 @@ class Inventory(db.Model):
     product = db.relationship(Product, back_populates='inventory')
     warehouse_id = db.Column(db.Integer, db.ForeignKey('warehouse.id'))
     warehouse = db.relationship(Warehouse, back_populates='warehouse')
+
+# InventorySchema
+class InventorySchema(ma.Schema):
+    class Meta: 
+        fields = ("id", "quantity")
