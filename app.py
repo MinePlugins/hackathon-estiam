@@ -99,7 +99,7 @@ def get_customerId(id):
     if customerId:
         return schema.jsonify(customerId)
     else:
-        return 'Customer id does not exist' 
+        return '<h1>Customer ' + id + ' does not exist</h1>' 
 
 # Contact route
 @app.route('/api/contacts')
@@ -107,7 +107,20 @@ def get_contacts():
     contacts = Contact.query.all()
     schema = ContactSchema(many=True)
     return schema.jsonify(contacts)
-  
+
+# test CustomerId route 
+@app.route("/api/contact/<id>")
+def get_contactId(id):
+    contactId = Contact.query.filter_by(id=id).first()
+    schema = ContactSchema()
+    if contactId:
+        return schema.jsonify(contactId)
+    else:
+        return '<h1>Contact ' + id + ' does not exist</h1>' 
+
+# vente par pays 
+
+
 # Order route
 @app.route('/api/orders')
 def get_orders():
