@@ -6,6 +6,8 @@ from faker import Faker
 from collections import namedtuple
 from flask_oidc import OpenIDConnect
 from flask_cors import CORS
+import gettext
+import pycountry
 import random
 import json
 app = Flask(__name__)
@@ -28,6 +30,8 @@ from model import *
 
 db.create_all()
 
+france = gettext.translation('iso3166', pycountry.LOCALES_DIR,languages=['fr'])
+france.install()
 
 def convert(dictionary):
     return namedtuple('GenericDict', dictionary.keys())(**dictionary)
@@ -78,6 +82,31 @@ def get_regions():
     regions = Region.query.all()
     schema = RegionSchema(many=True)
     return schema.jsonify(regions)
+
+
+def search_in_list(pays, list):
+    for i,v in enumerate(list):
+        if pays in v:
+            return i
+
+    return False
+
+
+@app.route('/api/global_income')
+def get_global_income():
+    order_item = OrderItem.query.all()
+    list_pays = []
+    for i in order_item:
+
+        ca = 0
+        for a in i.order.order_item:
+            ca += (a.quantity*a.unit_price)
+        val = search_in_list(i.order.customer.location.country.name, list_pays)
+        if not val and val is not 0:
+            list_pays.append([i.order.customer.location.country.name, ca])
+        else:
+            list_pays[val][1] += ca
+    return jsonify(list_pays)
 
 
 @app.route('/api/countries')
@@ -148,6 +177,7 @@ def logout():
 
 @app.route('/generate_data')
 def generate():
+
     try:
         for i in range(10):
             user = Employee(
@@ -160,6 +190,10 @@ def generate():
 
             db.session.add(user)
             db.session.commit()
+    except Exception as e:
+        pass
+
+    try:
         for i in range(10):
             country = Country.query.order_by(func.random()).first()
 
@@ -172,61 +206,19 @@ def generate():
             )
             db.session.add(loc)
             db.session.commit()
-        for i in range(10):
+    except Exception as e:
+        pass
+    try:
+        for i in range(100):
+            print("CUSTOMER")
             loc = Location.query.order_by(func.random()).first()
 
-            ware = Warehouse(
-                name=fake.word(),
-                location=loc
-            )
-            db.session.add(ware)
-            db.session.commit()
-        for i in range(10):
-            ware = Warehouse.query.order_by(func.random()).first()
-            pro = Product.query.order_by(func.random()).first()
-
-            inv = Inventory(
-                quantity=fake.pyint(),
-                warehouse=ware,
-                product=pro,
-            )
-            db.session.add(inv)
-            db.session.commit()
-        for i in range(10):
-            cust = Customer.query.order_by(func.random()).first()
-            emp = Employee.query.order_by(func.random()).first()
-
-            inv = Order(
-                customer=cust,
-                salesman=emp,
-                order_date=fake.iso8601(),
-                status="Ended",
-            )
-            db.session.add(inv)
-            db.session.commit()
-
-        for i in range(10):
-            productcategory = ProductCategory(name=fake.word())
-            db.session.add(productcategory)
-            db.session.commit()
-
-        for i in range(10):
-            category = ProductCategory.query.order_by(func.random()).first()
-            product = Product(
-                name=fake.word(),
-                description=fake.text(),
-                standard_cost=fake.pyfloat(positive=True),
-                list_cost=fake.pyfloat(positive=True),
-                category=category
-            )
-            db.session.add(product)
-            db.session.commit()
-        for i in range(10):
             customer = Customer(
                 name=fake.name(),
                 address=fake.address(),
                 website="google.fr",
                 credit_limit=fake.pyfloat(positive=True),
+                location=loc
 
             )
             db.session.add(customer)
@@ -240,6 +232,72 @@ def generate():
             )
             db.session.add(contact)
             db.session.commit()
+    except Exception as e:
+        print(e)
+    try:
+        for i in range(10):
+            loc = Location.query.order_by(func.random()).first()
+
+            ware = Warehouse(
+                name=fake.word(),
+                location=loc
+            )
+            db.session.add(ware)
+            db.session.commit()
+    except Exception as e:
+        pass
+
+    try:
+        for i in range(10):
+            ware = Warehouse.query.order_by(func.random()).first()
+            pro = Product.query.order_by(func.random()).first()
+
+            inv = Inventory(
+                quantity=fake.pyint(),
+                warehouse=ware,
+                product=pro,
+            )
+            db.session.add(inv)
+            db.session.commit()
+    except Exception as e:
+        print(e)
+    try:
+        for i in range(10):
+            cust = Customer.query.order_by(func.random()).first()
+            emp = Employee.query.order_by(func.random()).first()
+
+            inv = Order(
+                customer=cust,
+                salesman=emp,
+                order_date=fake.iso8601(),
+                status="Ended",
+            )
+            db.session.add(inv)
+            db.session.commit()
+    except Exception as e:
+        print(e)
+    try:
+        for i in range(10):
+            productcategory = ProductCategory(name=fake.word())
+            db.session.add(productcategory)
+            db.session.commit()
+    except Exception as e:
+        print(e)
+    try:
+        for i in range(10):
+            category = ProductCategory.query.order_by(func.random()).first()
+            product = Product(
+                name=fake.word(),
+                description=fake.text(),
+                standard_cost=fake.pyfloat(positive=True),
+                list_cost=fake.pyfloat(positive=True),
+                category=category
+            )
+            db.session.add(product)
+            db.session.commit()
+    except Exception as e:
+        print(e)
+    try:
         eu = Region(name="Europe")
         asia = Region(name="Asia")
         usa = Region(name="Americas")
