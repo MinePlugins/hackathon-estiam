@@ -15,7 +15,7 @@ class RegionSchema(ma.Schema):
 
 class Country(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, unique=True)
+    name = db.Column(db.String, unique=True, convert_unicode=True)
     region_id = db.Column(db.Integer, db.ForeignKey('region.id'))
     region = db.relationship("Region", backref="regions")
 
@@ -107,6 +107,8 @@ class Customer(db.Model):
     address = db.Column(db.String)
     website = db.Column(db.String)
     credit_limit = db.Column(db.Float)
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
+    location = db.relationship("Location", backref="customer")
     contact = db.relationship("Contact", back_populates="customer")
     order = db.relationship("Order", back_populates="customer")
 
@@ -147,18 +149,20 @@ class OrderSchema(ma.Schema):
     salesman = fields.Nested(lambda: OrderSchema) 
 
 class OrderItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    quantity = db.Column(db.Integer)
-    unit_price = db.Column(db.Integer)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    quantity = db.Column(db.Integer, nullable=False)
+    unit_price = db.Column(db.Integer, nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), primary_key=True)
     product = db.relationship(Product, back_populates='order_item')
-    order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), primary_key=True)
     order = db.relationship(Order, back_populates='order_item')
 
 # OrderItemSchema
 class OrderItemSchema(ma.Schema):
     class Meta:
-        fields = ("id", "product", "order")
+        fields = ("id", "quantity", "unit_price", "product", "order")
+
+    product = fields.Nested(lambda: ProductSchema)
+    order = fields.Nested(lambda: OrderSchema)
 
 class Inventory(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -1,3 +1,5 @@
+
+# -*- coding: utf-8 -*-
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql.expression import func
@@ -29,9 +31,6 @@ fake = Faker()
 from model import *
 
 db.create_all()
-
-france = gettext.translation('iso3166', pycountry.LOCALES_DIR,languages=['fr'])
-france.install()
 
 def convert(dictionary):
     return namedtuple('GenericDict', dictionary.keys())(**dictionary)
@@ -65,6 +64,15 @@ def get_productId(id):
     else:
         return '<h1>Product ' + id + ' does not exist</h1>'
 
+@app.route('/api/country_code/<code>')
+def get_country_by_code(code):
+    country = pycountry.countries.get(alpha_2=code)
+    print(country.name)
+    data = Country.query.filter_by(name=country.name).first()
+    print(data)
+    schema = CountrySchema()
+    return schema.jsonify(data)
+
 
 @app.route('/api/locations')
 def get_locations():
@@ -77,7 +85,7 @@ def get_locations():
 def get_locationId(id):
     locationId = Location.query.filter_by(id=id).first()
     schema = LocationSchema()
-    if orderItemId:
+    if locationId:
         return schema.jsonify(locationId)
     else:
         return '<h1>Location ' + id + ' does not exist</h1>'
@@ -94,7 +102,7 @@ def get_warehouses():
 def get_warehouseId(id):
     warehouseId = Warehouse.query.filter_by(id=id).first()
     schema = WarehouseSchema()
-    if orderItemId:
+    if warehouseId:
         return schema.jsonify(warehouseId)
     else:
         return '<h1>Warehouse ' + id + ' does not exist</h1>'
@@ -110,7 +118,7 @@ def get_employees():
 def get_employeeId(id):
     employeeId = Employee.query.filter_by(id=id).first()
     schema = EmployeeSchema()
-    if orderItemId:
+    if employeeId:
         return schema.jsonify(employeeId)
     else:
         return '<h1>Employee ' + id + ' does not exist</h1>'
@@ -126,7 +134,7 @@ def get_regions():
 def get_regionId(id):
     regionId = Region.query.filter_by(id=id).first()
     schema = RegionSchema()
-    if orderItemId:
+    if regionId:
         return schema.jsonify(regionId)
     else:
         return '<h1>Region ' + id + ' does not exist</h1>'
