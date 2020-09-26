@@ -90,6 +90,7 @@ def get_locations():
     schema = LocationSchema(many=True)
     return schema.jsonify(locations)
 
+
 # Location route by id 
 @app.route("/api/location/<id>")
 def get_locationId(id):
@@ -104,6 +105,17 @@ def get_locationId(id):
 @app.route('/api/warehouses')
 def get_warehouses():
     warehouses = Warehouse.query.all()
+    schema = WarehouseSchema(many=True)
+    return schema.jsonify(warehouses)
+
+
+@app.route("/api/warehouses/<country_id>")
+def get_warehouse_by_country(country_id):
+    loc = Location.query.filter_by(country_id=country_id).all()
+    id_list = []
+    for i in loc:
+        id_list.append(i.id)
+    warehouses = Warehouse.query.filter(Warehouse.location_id.in_(id_list)).all()
     schema = WarehouseSchema(many=True)
     return schema.jsonify(warehouses)
 
@@ -155,6 +167,7 @@ def get_regionId(id):
         return schema.jsonify(regionId)
     else:
         return '<h1>Region ' + id + ' does not exist</h1>'
+
 
 def search_in_list(pays, list):
     for i,v in enumerate(list):
@@ -214,11 +227,13 @@ def get_customerId(id):
     else:
         return '<h1>Customer ' + id + ' does not exist</h1>' 
 
+
 # Customer Count Query 
 @app.route('/api/customer/count')
 def get_count_customer():
     customerCount = db.session.query(db.func.count(Customer.id)).scalar()
     return jsonify(CustomersNumbers = customerCount)
+
 
 # Contact route
 @app.route('/api/contacts')
@@ -226,6 +241,7 @@ def get_contacts():
     contacts = Contact.query.all()
     schema = ContactSchema(many=True)
     return schema.jsonify(contacts)
+
 
 # Contact route by id
 @app.route("/api/contact/<id>")
@@ -236,6 +252,7 @@ def get_contactId(id):
         return schema.jsonify(contactId)
     else:
         return '<h1>Contact ' + id + ' does not exist</h1>' 
+
 
 # Order route
 @app.route('/api/orders')
@@ -254,13 +271,36 @@ def get_orderId(id):
     else:
         return '<h1>Order ' + id + ' does not exist</h1>'
 
+
+@app.route('/api/order_items/<country_id>')
+def get_order_items_by_country(country_id):
+    loc = Location.query.filter_by(country_id=country_id).all()
+    id_list = []
+    for i in loc:
+        id_list.append(i.id)
+    customer = Customer.query.filter(Customer.location_id.in_(id_list))
+    id_list = []
+    for i in customer:
+        id_list.append(i.id)
+    order = Order.query.filter(Order.customer_id.in_(id_list))
+    id_list = []
+    for i in order:
+        id_list.append(i.id)
+    orderItems = db.session.query(ProductCategory.name, func.sum(OrderItem.quantity)).join(OrderItem.product).join(Product.category)\
+        .filter(OrderItem.order_id.in_(id_list))\
+        .group_by(ProductCategory.name)\
+        .all()
+
+    # Renvoi un tab [] vide ??
+    return jsonify(orderItems)
+
 # OrderItems route
-@app.route('/api/orderItems')
-def get_orderItems():
-    orderItems = OrderItem.query.all()
+@app.route('/api/order_items')
+def get_order_items():
+    orderItems = db.session.query(func.date_trunc('year', Order.order_date),func.sum(OrderItem.quantity)).group_by(func.date_trunc('year', Order.order_date)).join(Order).all()
     schema = OrderItemSchema(many=True)
     # Renvoi un tab [] vide ??
-    return schema.jsonify(orderItems)
+    return jsonify(orderItems)
 
 # OrderItem route by id 
 @app.route("/api/orderItem/<id>")
