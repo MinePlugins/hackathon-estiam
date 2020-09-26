@@ -1,6 +1,6 @@
 
 # -*- coding: utf-8 -*-
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql.expression import func
 from flask_marshmallow import Marshmallow
@@ -14,8 +14,8 @@ import random
 import json
 from sqlalchemy import func
 
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql+psycopg2://postgres:undeuxtrois@lol.cournut.ovh:5432/hack"
+app = Flask(__name__, static_folder="./static/build/static", template_folder="./static/build")
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql+psycopg2://postgres:undeuxtrois@192.168.10.176:5432/hack"
 app.config.update({
     'SECRET_KEY': 'kdjfoijdzoxksdpdlpdskdoskdloskqq',
     'TESTING': True,
@@ -31,25 +31,25 @@ ma = Marshmallow(app)
 CORS(app)
 fake = Faker()
 from model import *
-
 db.create_all()
 
 def convert(dictionary):
     return namedtuple('GenericDict', dictionary.keys())(**dictionary)
 
+@app.route('/', methods=['GET'])
+@oidc.require_login
+def index():
+    return render_template('index.html')
 
 
-@app.route('/')
-def hello_world():
-    if oidc.user_loggedin:
-        return ('Hello, %s, <a href="/private">See private</a> '
-                '<a href="/logout">Log out</a>') % \
-            oidc.user_getfield('email')
-    else:
-        return 'Welcome anonymous, <a href="/private">Log in</a>'
+@app.route('/<path:path>', methods=['GET'])
+@oidc.require_login
+def any_root_path(path):
+    return render_template('index.html')
 
 
 @app.route('/api/products')
+@oidc.require_login
 def get_products():
     products = Product.query.all()
     schema = ProductSchema(many=True)
@@ -58,6 +58,7 @@ def get_products():
 
 # Products route by id 
 @app.route("/api/product/<id>")
+@oidc.require_login
 def get_productId(id):
     productId = Product.query.filter_by(id=id).first()
     schema = ProductSchema()
@@ -68,6 +69,7 @@ def get_productId(id):
 
 
 @app.route('/api/country_code/<code>')
+@oidc.require_login
 def get_country_by_code(code):
     country = pycountry.countries.get(alpha_2=code)
     print(country.name)
@@ -79,12 +81,14 @@ def get_country_by_code(code):
 
 # Product Count Query
 @app.route("/api/product/count")
+@oidc.require_login
 def get_count_product():
     productCount = db.session.query(db.func.count(Product.id)).scalar()
     return jsonify(ProductsNumbers=productCount)
 
 
 @app.route('/api/locations')
+@oidc.require_login
 def get_locations():
     locations = Location.query.all()
     schema = LocationSchema(many=True)
@@ -92,6 +96,7 @@ def get_locations():
 
 # Location route by id 
 @app.route("/api/location/<id>")
+@oidc.require_login
 def get_locationId(id):
     locationId = Location.query.filter_by(id=id).first()
     schema = LocationSchema()
@@ -102,13 +107,16 @@ def get_locationId(id):
 
 
 @app.route('/api/warehouses')
+@oidc.require_login
 def get_warehouses():
     warehouses = Warehouse.query.all()
     schema = WarehouseSchema(many=True)
     return schema.jsonify(warehouses)
 
+
 # Warehouse route by id 
 @app.route("/api/warehouse/<id>")
+@oidc.require_login
 def get_warehouseId(id):
     warehouseId = Warehouse.query.filter_by(id=id).first()
     schema = WarehouseSchema()
@@ -117,14 +125,18 @@ def get_warehouseId(id):
     else:
         return '<h1>Warehouse ' + id + ' does not exist</h1>'
 
+
 @app.route('/api/employees')
+@oidc.require_login
 def get_employees():
     employees = Employee.query.all()
     schema = EmployeeSchema(many=True)
     return schema.jsonify(employees)
 
+
 # Employee route by id  
 @app.route("/api/employee/<id>")
+@oidc.require_login
 def get_employeeId(id):
     employeeId = Employee.query.filter_by(id=id).first()
     schema = EmployeeSchema()
@@ -133,21 +145,26 @@ def get_employeeId(id):
     else:
         return '<h1>Employee ' + id + ' does not exist</h1>'
 
+
 # Employee Count Query
 @app.route('/api/employee/count')
+@oidc.require_login
 def get_count_employee():
     employeeCount = db.session.query(db.func.count(Employee.id)).scalar()
     return jsonify(EmployeeNumbers = employeeCount)
 
 
 @app.route('/api/regions')
+@oidc.require_login
 def get_regions():
     regions = Region.query.all()
     schema = RegionSchema(many=True)
     return schema.jsonify(regions)
 
+
 # Region route by id 
 @app.route("/api/region/<id>")
+@oidc.require_login
 def get_regionId(id):
     regionId = Region.query.filter_by(id=id).first()
     schema = RegionSchema()
@@ -155,6 +172,7 @@ def get_regionId(id):
         return schema.jsonify(regionId)
     else:
         return '<h1>Region ' + id + ' does not exist</h1>'
+
 
 def search_in_list(pays, list):
     for i,v in enumerate(list):
@@ -165,6 +183,7 @@ def search_in_list(pays, list):
 
 
 @app.route('/api/global_income')
+@oidc.require_login
 def get_global_income():
     order_item = OrderItem.query.all()
     list_pays = []
@@ -182,13 +201,16 @@ def get_global_income():
 
 
 @app.route('/api/countries')
+@oidc.require_login
 def get_countries():
     countries = Country.query.all()
     schema = CountrySchema(many=True)
     return schema.jsonify(countries)
 
+
 # Country route by id 
 @app.route("/api/country/<id>")
+@oidc.require_login
 def get_countryId(id):
     countryId = Country.query.filter_by(id=id).first()
     schema = CountrySchema()
@@ -197,15 +219,19 @@ def get_countryId(id):
     else:
         return '<h1>CountryId ' + id + ' does not exist</h1>'
 
+
 # Customer route 
 @app.route('/api/customers')
+@oidc.require_login
 def get_customers():
     customers = Customer.query.all()
     schema = CustomerSchema(many=True)
     return schema.jsonify(customers)
 
+
 # Customer route by id 
 @app.route("/api/customer/<id>")
+@oidc.require_login
 def get_customerId(id):
     customerId = Customer.query.filter_by(id=id).first()
     schema = CustomerSchema()
@@ -214,21 +240,27 @@ def get_customerId(id):
     else:
         return '<h1>Customer ' + id + ' does not exist</h1>' 
 
+
 # Customer Count Query 
 @app.route('/api/customer/count')
+@oidc.require_login
 def get_count_customer():
     customerCount = db.session.query(db.func.count(Customer.id)).scalar()
     return jsonify(CustomersNumbers = customerCount)
 
+
 # Contact route
 @app.route('/api/contacts')
+@oidc.require_login
 def get_contacts():
     contacts = Contact.query.all()
     schema = ContactSchema(many=True)
     return schema.jsonify(contacts)
 
+
 # Contact route by id
 @app.route("/api/contact/<id>")
+@oidc.require_login
 def get_contactId(id):
     contactId = Contact.query.filter_by(id=id).first()
     schema = ContactSchema()
@@ -237,15 +269,19 @@ def get_contactId(id):
     else:
         return '<h1>Contact ' + id + ' does not exist</h1>' 
 
+
 # Order route
 @app.route('/api/orders')
+@oidc.require_login
 def get_orders():
     orders = Order.query.all()
     schema = OrderSchema(many=True)
     return schema.jsonify(orders)
 
+
 # Order route by id 
 @app.route("/api/order/<id>")
+@oidc.require_login
 def get_orderId(id):
     orderId = Order.query.filter_by(id=id).first()
     schema = OrderSchema()
@@ -254,16 +290,20 @@ def get_orderId(id):
     else:
         return '<h1>Order ' + id + ' does not exist</h1>'
 
+
 # OrderItems route
 @app.route('/api/orderItems')
+@oidc.require_login
 def get_orderItems():
     orderItems = OrderItem.query.all()
     schema = OrderItemSchema(many=True)
     # Renvoi un tab [] vide ??
     return schema.jsonify(orderItems)
 
+
 # OrderItem route by id 
 @app.route("/api/orderItem/<id>")
+@oidc.require_login
 def get_orderItemId(id):
     orderItemId = OrderItem.query.filter_by(id=id).first()
     schema = OrderItemSchema()
@@ -272,15 +312,19 @@ def get_orderItemId(id):
     else:
         return '<h1>OrderItem ' + id + ' does not exist</h1>'
 
+
 # Inventory route
 @app.route('/api/inventorys')
+@oidc.require_login
 def get_inventorys():
     inventorys = Inventory.query.all()
     schema = InventorySchema(many=True)
     return schema.jsonify(inventorys)
 
+
 # Invetory route by id 
 @app.route("/api/inventory/<id>")
+@oidc.require_login
 def get_inventoryId(id):
     inventoryId = Inventory.query.filter_by(id=id).first()
     schema = InventorySchema()
@@ -289,21 +333,15 @@ def get_inventoryId(id):
     else:
         return '<h1>InventoryId ' + id + ' does not exist</h1>'
 
-@app.route('/private')
-@oidc.require_login
-def hello_me():
-    info = oidc.user_getinfo(['email', 'clientId'])
-    return ('Hello, %s (%s)! <a href="/">Return</a>' %
-            (info.get('email'), info.get('clientId')))
 
-
-@app.route('/logout')
+@app.route('/api/logout')
 def logout():
     oidc.logout()
-    return 'Hi, you have been logged out! <a href="/">Return</a>'
+    return jsonify(message="You have been logged out")
 
 
 @app.route('/generate_data')
+@oidc.require_login
 def generate():
 
     try:
