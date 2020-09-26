@@ -23,7 +23,7 @@ app.config.update({
     'OIDC_CLIENT_SECRETS': 'client_secrets.json',
     'OIDC_ID_TOKEN_COOKIE_SECURE': False,
     'OIDC_REQUIRE_VERIFIED_EMAIL': False,
-    'OIDC_OPENID_REALM': 'http://localhost:5000/oidc_callback'
+    'OIDC_OPENID_REALM': 'https://hack.cournut.ovh/oidc_callback'
 })
 oidc = OpenIDConnect(app)
 db = SQLAlchemy(app)
