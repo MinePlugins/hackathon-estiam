@@ -115,7 +115,8 @@ class Customer(db.Model):
 # CusomerSchema
 class CustomerSchema(ma.Schema):
     class Meta:
-        fields = ("id", "name", "address", "website", "credit_limit")
+        fields = ("id", "name", "address", "website", "credit_limit", "location")
+    location = fields.Nested(lambda: LocationSchema)
 
 class Contact(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -145,8 +146,9 @@ class Order(db.Model):
 # OrderSchema
 class OrderSchema(ma.Schema):
     class Meta:
-        fields = ("id", "salesman", "order_date", "status")
+        fields = ("id", "salesman", "order_date", "status", "customer")
     salesman = fields.Nested(lambda: OrderSchema) 
+    customer = fields.Nested(lambda: CustomerSchema)
 
 class OrderItem(db.Model):
     quantity = db.Column(db.Integer, nullable=False)

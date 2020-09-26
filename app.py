@@ -94,6 +94,7 @@ def get_locations():
     schema = LocationSchema(many=True)
     return schema.jsonify(locations)
 
+
 # Location route by id 
 @app.route("/api/location/<id>")
 @oidc.require_login
@@ -114,6 +115,19 @@ def get_warehouses():
     return schema.jsonify(warehouses)
 
 
+<<<<<<< HEAD
+=======
+@app.route("/api/warehouses/<country_id>")
+def get_warehouse_by_country(country_id):
+    loc = Location.query.filter_by(country_id=country_id).all()
+    id_list = []
+    for i in loc:
+        id_list.append(i.id)
+    warehouses = Warehouse.query.filter(Warehouse.location_id.in_(id_list)).all()
+    schema = WarehouseSchema(many=True)
+    return schema.jsonify(warehouses)
+
+>>>>>>> c20f0380b6ef9b0c1996d60f4eb9e63aa005c0ad
 # Warehouse route by id 
 @app.route("/api/warehouse/<id>")
 @oidc.require_login
@@ -291,14 +305,43 @@ def get_orderId(id):
         return '<h1>Order ' + id + ' does not exist</h1>'
 
 
+<<<<<<< HEAD
 # OrderItems route
 @app.route('/api/orderItems')
 @oidc.require_login
 def get_orderItems():
     orderItems = OrderItem.query.all()
+=======
+@app.route('/api/order_items/<country_id>')
+def get_order_items_by_country(country_id):
+    loc = Location.query.filter_by(country_id=country_id).all()
+    id_list = []
+    for i in loc:
+        id_list.append(i.id)
+    customer = Customer.query.filter(Customer.location_id.in_(id_list))
+    id_list = []
+    for i in customer:
+        id_list.append(i.id)
+    order = Order.query.filter(Order.customer_id.in_(id_list))
+    id_list = []
+    for i in order:
+        id_list.append(i.id)
+    orderItems = db.session.query(ProductCategory.name, func.sum(OrderItem.quantity)).join(OrderItem.product).join(Product.category)\
+        .filter(OrderItem.order_id.in_(id_list))\
+        .group_by(ProductCategory.name)\
+        .all()
+
+    # Renvoi un tab [] vide ??
+    return jsonify(orderItems)
+
+# OrderItems route
+@app.route('/api/order_items')
+def get_order_items():
+    orderItems = db.session.query(func.date_trunc('year', Order.order_date),func.sum(OrderItem.quantity)).group_by(func.date_trunc('year', Order.order_date)).join(Order).all()
+>>>>>>> c20f0380b6ef9b0c1996d60f4eb9e63aa005c0ad
     schema = OrderItemSchema(many=True)
     # Renvoi un tab [] vide ??
-    return schema.jsonify(orderItems)
+    return jsonify(orderItems)
 
 
 # OrderItem route by id 
