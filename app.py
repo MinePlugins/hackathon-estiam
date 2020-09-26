@@ -115,8 +115,6 @@ def get_warehouses():
     return schema.jsonify(warehouses)
 
 
-<<<<<<< HEAD
-=======
 @app.route("/api/warehouses/<country_id>")
 def get_warehouse_by_country(country_id):
     loc = Location.query.filter_by(country_id=country_id).all()
@@ -127,7 +125,6 @@ def get_warehouse_by_country(country_id):
     schema = WarehouseSchema(many=True)
     return schema.jsonify(warehouses)
 
->>>>>>> c20f0380b6ef9b0c1996d60f4eb9e63aa005c0ad
 # Warehouse route by id 
 @app.route("/api/warehouse/<id>")
 @oidc.require_login
@@ -305,13 +302,13 @@ def get_orderId(id):
         return '<h1>Order ' + id + ' does not exist</h1>'
 
 
-<<<<<<< HEAD
 # OrderItems route
 @app.route('/api/orderItems')
 @oidc.require_login
 def get_orderItems():
     orderItems = OrderItem.query.all()
-=======
+
+
 @app.route('/api/order_items/<country_id>')
 def get_order_items_by_country(country_id):
     loc = Location.query.filter_by(country_id=country_id).all()
@@ -338,7 +335,6 @@ def get_order_items_by_country(country_id):
 @app.route('/api/order_items')
 def get_order_items():
     orderItems = db.session.query(func.date_trunc('year', Order.order_date),func.sum(OrderItem.quantity)).group_by(func.date_trunc('year', Order.order_date)).join(Order).all()
->>>>>>> c20f0380b6ef9b0c1996d60f4eb9e63aa005c0ad
     schema = OrderItemSchema(many=True)
     # Renvoi un tab [] vide ??
     return jsonify(orderItems)
